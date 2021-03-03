@@ -5,7 +5,16 @@ module Part3 where
 --
 -- Проверить, является ли число N простым (1 <= N <= 10^9)
 prob18 :: Integer -> Bool
-prob18 = error "Implement me!"
+prob18 n = prime n
+
+prime :: Integer -> Bool
+prime n = if n == 1 then False else isPrime n 2
+
+isPrime :: Integer -> Integer -> Bool
+isPrime m i
+  | i * i > m = True
+  | m `rem` i == 0 = False
+  | otherwise = isPrime m (i + 1)
 
 ------------------------------------------------------------
 -- PROBLEM #19
@@ -14,7 +23,24 @@ prob18 = error "Implement me!"
 -- разложении числа N (1 <= N <= 10^9). Простые делители
 -- должны быть расположены по возрастанию
 prob19 :: Integer -> [(Integer, Int)]
-prob19 = error "Implement me!"
+prob19 x = map (\d -> (d, factorize d x)) (primeDivisors x)
+
+factorize :: Integer -> Integer -> Int
+factorize divisor number
+  | mod(number) divisor == 0 = 1 + factorize divisor (div(number) divisor)
+  | otherwise = 0
+
+primeDivisors :: Integer -> [Integer]
+primeDivisors x = filter isPrimeDivisors (allDivisors x)
+
+isPrimeDivisors :: Integer -> Bool
+isPrimeDivisors 1 = False
+isPrimeDivisors 2 = True
+isPrimeDivisors n = all (\p -> n `mod` p /= 0) (takeWhile (\p -> p * p <= n) primes)
+
+primes :: [Integer]
+primes = 2 : filter isPrimeDivisors [3, 5 ..]
+
 
 ------------------------------------------------------------
 -- PROBLEM #20
@@ -23,7 +49,13 @@ prob19 = error "Implement me!"
 -- Совершенное число равно сумме своих делителей (меньших
 -- самого числа)
 prob20 :: Integer -> Bool
-prob20 = error "Implement me!"
+prob20 n = sum (removeSelf n (allDivisors n)) == n
+
+removeSelf :: Integer -> [Integer] -> [Integer]
+removeSelf _ [] = []
+removeSelf x (y : ys)
+  | x == y = removeSelf x ys
+  | otherwise = y : removeSelf x ys
 
 ------------------------------------------------------------
 -- PROBLEM #21
@@ -31,7 +63,24 @@ prob20 = error "Implement me!"
 -- Вернуть список всех делителей числа N (1<=N<=10^10) в
 -- порядке возрастания
 prob21 :: Integer -> [Integer]
-prob21 = error "Implement me!"
+prob21 n = sorting (allDivisors n)
+
+sorting :: Ord a => [a] -> [a]
+sorting [] = []
+sorting (p : xs) = (sorting b) ++ [p] ++ (sorting c)
+  where
+    b = filter (< p) xs
+    c = filter (>= p) xs
+
+allDivisors :: Integer -> [Integer]
+allDivisors 1 = [1]
+allDivisors k =
+  k :
+  concatMap
+    (\x -> [x] ++ if div(k) x == x then [] else [div(k) x])
+    ( filter (\x -> mod(k) x == 0) $ takeWhile (\x -> x * x <= k) [2 ..])
+    ++ [1]
+
 
 ------------------------------------------------------------
 -- PROBLEM #22
@@ -39,7 +88,10 @@ prob21 = error "Implement me!"
 -- Подсчитать произведение количеств букв i в словах из
 -- заданной строки (списка символов)
 prob22 :: String -> Integer
-prob22 = error "Implement me!"
+prob22 str = product $ map count (words str)
+
+count :: String -> Integer
+count xs = toInteger (length (filter (== 'i') xs))
 
 ------------------------------------------------------------
 -- PROBLEM #23
@@ -50,7 +102,21 @@ prob22 = error "Implement me!"
 -- M > 0 и N > 0. Если M > N, то вернуть символы из W в
 -- обратном порядке. Нумерация символов с единицы.
 prob23 :: String -> Maybe String
-prob23 = error "Implement me!"
+prob23 input = do
+   let leftN =  read $ takeWhile (/= '-') input
+   let rightM =  read $ takeWhile (/= ':') $ tail $ dropWhile (/= '-') input
+   let parseStr = tail $ dropWhile (/= ' ') input
+   getMaybeString leftN rightM parseStr
+
+getMaybeString :: Int -> Int -> String -> Maybe String
+getMaybeString leftN rightM parseString 
+  | leftN > (length parseString)  || rightM > (length parseString) = Nothing
+  | leftN > rightM = (Just (reverseStr (take leftN  $ drop (rightM - 1) parseString)))
+  | otherwise = (Just (take rightM  $ drop (leftN - 1) parseString))
+
+
+reverseStr :: [a] -> [a]  
+reverseStr = foldl (\acc x -> x : acc) [] 
 
 ------------------------------------------------------------
 -- PROBLEM #24
@@ -59,7 +125,9 @@ prob23 = error "Implement me!"
 -- представить как сумму чисел от 1 до какого-то K
 -- (1 <= N <= 10^10)
 prob24 :: Integer -> Bool
-prob24 = error "Implement me!"
+prob24 num = fractionalPortion (sqrt (1 + 8 * fromInteger num)) == 0
+  where
+    fractionalPortion x = x - fromIntegral (floor x)
 
 ------------------------------------------------------------
 -- PROBLEM #25
@@ -67,7 +135,13 @@ prob24 = error "Implement me!"
 -- Проверить, что запись числа является палиндромом (т.е.
 -- читается одинаково слева направо и справа налево)
 prob25 :: Integer -> Bool
-prob25 = error "Implement me!"
+prob25 n = reversal n == n
+
+reversal :: Integral a => a -> a
+reversal = x 0
+  where
+    x a 0 = a
+    x a b = let (q, r) = quotRem(b) 10 in x (a * 10 + r) q
 
 ------------------------------------------------------------
 -- PROBLEM #26
@@ -76,7 +150,7 @@ prob25 = error "Implement me!"
 -- сумма делителей одного (без учёта самого числа) равна
 -- другому, и наоборот
 prob26 :: Integer -> Integer -> Bool
-prob26 = error "Implement me!"
+prob26 a b = sum (allDivisors a) == a + b && sum (allDivisors b) == a + b
 
 ------------------------------------------------------------
 -- PROBLEM #27
@@ -84,7 +158,15 @@ prob26 = error "Implement me!"
 -- Найти в списке два числа, сумма которых равна заданному.
 -- Длина списка не превосходит 500
 prob27 :: Int -> [Int] -> Maybe (Int, Int)
-prob27 = error "Implement me!"
+prob27 _ [] = Nothing
+prob27 summ (h : t) = fixedCurrent h t
+    where
+        fixedCurrent :: Int -> [Int] -> Maybe (Int, Int)
+        fixedCurrent _ [] = prob27 summ t
+        fixedCurrent a (b : c) =
+            if a + b == summ
+            then Just (a, b)
+            else fixedCurrent a c
 
 ------------------------------------------------------------
 -- PROBLEM #28
@@ -101,7 +183,10 @@ prob28 = error "Implement me!"
 -- Найти наибольшее число-палиндром, которое является
 -- произведением двух K-значных (1 <= K <= 3)
 prob29 :: Int -> Int
-prob29 k = error "Implement me!"
+prob29 k = maximum [x * y |x <- [a .. b],y <- [a .. b], (prob25 . toInteger)  (x * y)]
+               where
+                   a = 10 ^ (k - 1)
+                   b = 10 ^ k - 1
 
 ------------------------------------------------------------
 -- PROBLEM #30
@@ -109,7 +194,10 @@ prob29 k = error "Implement me!"
 -- Найти наименьшее треугольное число, у которого не меньше
 -- заданного количества делителей
 prob30 :: Int -> Integer
-prob30 = error "Implement me!"
+prob30 k = head (filter (\t -> length (allDivisors t) >= k) triangleNumbers)
+
+triangleNumbers :: [Integer]
+triangleNumbers = map (\n -> n * (n + 1) `div` 2) [0..]
 
 ------------------------------------------------------------
 -- PROBLEM #31
